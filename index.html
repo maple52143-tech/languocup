@@ -25,7 +25,7 @@ button{font:inherit}
 .boot::after{content:"INITIALIZING THE BLACKFLOW ARCHIVE";position:absolute;top:calc(50% + 90px);color:#6e938d;font-size:10px;letter-spacing:.35em}
 @keyframes bootFlicker{0%,14%,38%{opacity:.15;filter:blur(5px)}20%,44%,100%{opacity:1;filter:none}}
 @keyframes bootAway{70%{opacity:1;clip-path:inset(0)}100%{opacity:0;visibility:hidden;clip-path:inset(50% 0)}}
-.site{position:relative;z-index:2;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 16px 24px}
+.site{position:relative;z-index:2;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px 16px 24px}
 .masthead{position:relative;width:min(82vmin,620px);display:flex;justify-content:center;align-items:flex-end;margin-bottom:-4px}
 .masthead__eyebrow{position:absolute;top:5px;left:50%;transform:translateX(-50%);white-space:nowrap;color:#7ea39d;font-size:9px;letter-spacing:.42em;text-transform:uppercase}
 .masthead__logo{width:min(57vw,390px);height:clamp(70px,11vh,105px);margin:0;background:url("assets/blackflow/title.png") center/contain no-repeat;filter:drop-shadow(0 10px 18px #000)}
@@ -96,6 +96,13 @@ button{font:inherit}
 .node-detail{display:none}
 .cell.previewing{outline:1px solid var(--cyan);outline-offset:-2px}
 .sound-dock{display:contents}
+.board-io-btn{position:fixed;z-index:70;right:max(12px,env(safe-area-inset-right));display:flex;align-items:center;gap:8px;border:0;padding:8px 10px;color:rgba(217,213,195,.62);background:rgba(3,7,6,.5);backdrop-filter:blur(8px);cursor:pointer;font-size:7px;letter-spacing:.18em;transition:color .3s,background .3s;pointer-events:auto}
+.board-io-btn:hover{color:#ddd6bf;background:rgba(3,7,6,.75)}
+.board-io-btn::before{content:"";width:15px;height:10px;background:repeating-linear-gradient(90deg,var(--cyan) 0 1px,transparent 1px 3px);opacity:.35;transition:opacity .3s}
+.board-io-btn:hover::before{opacity:.85}
+#exportBtn{top:calc(max(12px,env(safe-area-inset-top)) + 44px)}
+#importBtn{top:calc(max(12px,env(safe-area-inset-top)) + 82px)}
+@media(max-width:700px),(pointer:coarse) and (max-width:1000px){.board-io-btn{right:max(8px,env(safe-area-inset-right));padding:7px 8px;min-height:38px;background:rgba(3,7,6,.72);font-size:9px;letter-spacing:.04em}#exportBtn{top:calc(6px + env(safe-area-inset-top) + 48px)}#importBtn{top:calc(6px + env(safe-area-inset-top) + 90px)}}
 @media(max-width:700px){.cell:not(.no-body):hover .cell-front,.cell:not(.no-body):focus-visible .cell-front{opacity:1!important;transform:none!important}.cell:not(.no-body):hover .cell-back,.cell:not(.no-body):focus-visible .cell-back{opacity:0!important}.cell:focus-visible{outline:1px solid var(--cyan);outline-offset:-2px}}
 @media(max-width:700px),(pointer:coarse) and (max-width:1000px){
  :root{--gap:4px}.site{padding:calc(58px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));gap:0;justify-content:flex-start;align-items:center}
@@ -153,7 +160,7 @@ button{font:inherit}
     0 1px 2px rgba(0,0,0,.95);
 }
 
-.cell.has-plate.plate-active .cell-level{
+.cell.has-plate.plated-complete .cell-level{
   color:#a8e0ff;
   text-shadow:
     0 0 9px rgba(168,224,255,.95),
@@ -167,141 +174,6 @@ button{font:inherit}
     font-size:6px;
     letter-spacing:0;
   }
-}
-
-/* ==========================================================
-   计分系统
-   ========================================================== */
-
-/* 总分半透明虚影，覆盖整个表格 */
-.total-score{
-  position:absolute;
-  inset:0;
-  z-index:10;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:clamp(100px,30vmin,300px);
-  font-weight:900;
-  font-family:"Bahnschrift Condensed","Arial Narrow",sans-serif;
-  color:rgba(114,217,206,.16);
-  text-shadow:
-    0 0 30px rgba(114,217,206,.12),
-    0 0 60px rgba(114,217,206,.06);
-  line-height:1;
-  letter-spacing:-.04em;
-  pointer-events:none;
-  transition:opacity .35s ease;
-  user-select:none;
-}
-.total-score.hidden{
-  opacity:0;
-}
-
-/* 移动端字号适配 */
-@media(max-width:700px){
-  .total-score{
-    font-size:clamp(80px,26vmin,220px);
-  }
-}
-
-/* 计分开关按钮：位于音乐开关正下方 */
-.score-toggle{
-  position:fixed;
-  z-index:70;
-  right:max(12px,env(safe-area-inset-right));
-  top:calc(max(12px,env(safe-area-inset-top)) + 44px);
-  display:flex;
-  align-items:center;
-  gap:8px;
-  border:0;
-  padding:8px 10px;
-  color:rgba(217,213,195,.62);
-  background:rgba(3,7,6,.5);
-  backdrop-filter:blur(8px);
-  cursor:pointer;
-  font-size:7px;
-  letter-spacing:.18em;
-  transition:color .3s,background .3s;
-}
-.score-toggle::before{
-  content:"";
-  width:15px;
-  height:10px;
-  background:repeating-linear-gradient(90deg,var(--cyan) 0 1px,transparent 1px 3px);
-  opacity:.35;
-  transform:scaleY(.35);
-  transition:transform .3s,opacity .3s;
-}
-.score-toggle[aria-pressed="true"]{
-  color:#ddd6bf;
-}
-.score-toggle[aria-pressed="true"]::before{
-  opacity:.85;
-  transform:scaleY(1);
-}
-
-@media(max-width:700px){
-  .score-toggle{
-    top:calc(max(8px,env(safe-area-inset-top)) + 44px);
-    right:max(8px,env(safe-area-inset-right));
-    padding:7px 8px;
-    background:rgba(3,7,6,.72);
-    min-height:44px;
-    font-size:10px;
-    letter-spacing:.05em;
-  }
-}
-
-/* ==========================================================
-   导入 / 导出按钮
-   ========================================================== */
-.board-io-btn{
-  position:fixed;
-  z-index:70;
-  right:max(12px,env(safe-area-inset-right));
-  display:flex;
-  align-items:center;
-  gap:8px;
-  border:0;
-  padding:8px 10px;
-  color:rgba(217,213,195,.62);
-  background:rgba(3,7,6,.5);
-  backdrop-filter:blur(8px);
-  cursor:pointer;
-  font-size:7px;
-  letter-spacing:.18em;
-  transition:color .3s,background .3s;
-}
-.board-io-btn:hover{
-  color:#ddd6bf;
-  background:rgba(3,7,6,.75);
-}
-.board-io-btn::before{
-  content:"";
-  width:15px;
-  height:10px;
-  background:repeating-linear-gradient(90deg,var(--cyan) 0 1px,transparent 1px 3px);
-  opacity:.35;
-  transition:opacity .3s;
-}
-.board-io-btn:hover::before{
-  opacity:.85;
-}
-#exportBtn{ top:calc(max(12px,env(safe-area-inset-top)) + 88px); }
-#importBtn{ top:calc(max(12px,env(safe-area-inset-top)) + 132px); }
-
-@media(max-width:700px){
-  .board-io-btn{
-    right:max(8px,env(safe-area-inset-right));
-    padding:7px 8px;
-    background:rgba(3,7,6,.72);
-    min-height:44px;
-    font-size:10px;
-    letter-spacing:.05em;
-  }
-  #exportBtn{ top:calc(max(8px,env(safe-area-inset-top)) + 88px); }
-  #importBtn{ top:calc(max(8px,env(safe-area-inset-top)) + 132px); }
 }
 
 /* ==========================================================
@@ -372,18 +244,18 @@ button{font:inherit}
   transform:translate(-20px,20px) scale(1);
 }
 
-/* ---------- 滚轮切换：仅在悬停 / 聚焦时镀层浮到正面，原内容半透明 ---------- */
-.cell.has-plate.plate-active:hover .cell-front,
-.cell.has-plate.plate-active:focus-visible .cell-front,
-.cell.has-plate.plate-active:hover .cell-back,
-.cell.has-plate.plate-active:focus-visible .cell-back{
+/* ---------- 镀层完成后，悬停 / 聚焦时展示完整镀层条件 ---------- */
+.cell.has-plate.plated-complete:hover .cell-front,
+.cell.has-plate.plated-complete:focus-visible .cell-front,
+.cell.has-plate.plated-complete:hover .cell-back,
+.cell.has-plate.plated-complete:focus-visible .cell-back{
   opacity:.1 !important;
   filter:blur(2px) saturate(.3);
   transform:scale(.94);
 }
 
-.cell.has-plate.plate-active:hover .cell-plate,
-.cell.has-plate.plate-active:focus-visible .cell-plate{
+.cell.has-plate.plated-complete:hover .cell-plate,
+.cell.has-plate.plated-complete:focus-visible .cell-plate{
   opacity:1;
   z-index:6;
   transform:translate(0,0) scale(1);
@@ -400,8 +272,8 @@ button{font:inherit}
   backdrop-filter:blur(6px);
 }
 
-.cell.has-plate.plate-active:hover .cell-plate .cell-text,
-.cell.has-plate.plate-active:focus-visible .cell-plate .cell-text{
+.cell.has-plate.plated-complete:hover .cell-plate .cell-text,
+.cell.has-plate.plated-complete:focus-visible .cell-plate .cell-text{
   color:#fdf6e0;
   font-size:clamp(8px,1.45vmin,11px);
   -webkit-line-clamp:6;
@@ -446,7 +318,7 @@ button{font:inherit}
 }
 
 /* 镀层展开时自动淡出，避免与镀层内容抢视线 */
-.cell.has-plate.plate-active .cell-plate-badge{
+.cell.has-plate.plated-complete .cell-plate-badge{
   opacity:1;
   color:#ffd87a;
   transform:none;
@@ -455,22 +327,66 @@ button{font:inherit}
     0 1px 2px rgba(0,0,0,.95);
 }
 
-/* 镀层状态下，格子整体加金色描边（选中态优先） */
-.cell.has-plate.plate-active:not(.selected){
-  border-color:rgba(232,207,143,.78);
+/* 镀层完成：参考蚀刻章的金属边框与低饱和全息镀膜 */
+.cell.has-plate.plated-complete{
+  color:#fff8df;
+  border-color:rgba(235,238,214,.96);
+  background:
+    linear-gradient(112deg,transparent 5%,rgba(255,255,255,.24) 23%,transparent 39%) 110% 0/230% 100% no-repeat,
+    linear-gradient(142deg,rgba(91,47,72,.96),rgba(29,75,75,.97) 28%,rgba(177,151,91,.96) 52%,rgba(61,80,91,.97) 73%,rgba(91,38,54,.97));
   box-shadow:
-    inset 0 2px rgba(232,207,143,.75),
-    0 0 22px rgba(232,207,143,.30),
-    0 8px 24px rgba(0,0,0,.5);
+    inset 0 2px rgba(255,247,205,.96),
+    inset 0 -2px rgba(143,224,218,.52),
+    inset 2px 0 rgba(208,183,238,.34),
+    0 0 9px rgba(229,207,148,.5),
+    0 0 24px rgba(107,220,211,.32),
+    0 10px 26px rgba(0,0,0,.58);
+  animation:platedSheen 4.2s ease-in-out infinite alternate;
 }
 
-/* 选中 + 镀层同时存在时，选中态样式重新声明一次，确保压住镀层描边 */
-.cell.has-plate.plate-active.selected{
-  border-color:rgba(232,214,174,.7);
-  background:linear-gradient(145deg,rgba(104,18,31,.94),rgba(28,7,12,.96));
-  box-shadow:
-    inset 0 2px #d7b776,
-    0 0 22px rgba(143,16,35,.38);
+.cell.has-plate.plated-complete::before{
+  opacity:.38;
+  filter:grayscale(.35) sepia(.25) hue-rotate(118deg) saturate(1.55) brightness(1.3);
+  mix-blend-mode:screen;
+}
+
+.cell.has-plate.plated-complete::after{
+  content:"◆ " attr(data-index);
+  color:#fff0b6;
+  text-shadow:0 0 7px rgba(255,228,154,.8),0 1px 2px #000;
+}
+
+.cell.has-plate.plated-complete .cell-front{
+  color:#fff8df;
+  text-shadow:0 1px 2px #000,0 0 10px rgba(190,242,232,.42);
+}
+
+.cell.has-plate.plated-complete .cell-mark{
+  border-color:rgba(241,226,182,.58);
+  box-shadow:inset 0 0 16px rgba(125,225,213,.15);
+  transform:scale(.91) rotate(2deg);
+}
+
+.cell.has-plate.plated-complete .cell-mark::before{
+  opacity:1;
+  border-color:#f8dda0;
+  transform:none;
+  filter:drop-shadow(0 0 5px rgba(125,226,215,.7));
+}
+
+.cell.has-plate.plated-complete .cell-mark::after{
+  opacity:.45;
+  transform:scale(1.62) rotate(12deg);
+  filter:grayscale(.25) sepia(.35) hue-rotate(105deg) saturate(1.5);
+}
+
+.cell.has-plate.plated-complete.winning{
+  animation:winnerPulse 1.7s ease-in-out infinite alternate;
+}
+
+@keyframes platedSheen{
+  from{background-position:110% 0,0 0;filter:saturate(.92) brightness(.98)}
+  to{background-position:-70% 0,0 0;filter:saturate(1.12) brightness(1.08)}
 }
 
 /* 移动端缩小并贴近边缘 */
@@ -495,6 +411,69 @@ button{font:inherit}
   line-height:1.6;
   letter-spacing:.02em;
 }
+
+/* ==========================================================
+   词条记录终端：右键打开计数、清单或失败标记
+   ========================================================== */
+.cell-tracker-badge{position:absolute;right:5px;bottom:4px;z-index:8;padding:2px 4px;border:1px solid rgba(114,217,206,.24);color:#86c9c0;background:rgba(2,8,7,.76);font-size:clamp(6px,.9vmin,8px);line-height:1;letter-spacing:.04em;pointer-events:none;box-shadow:0 0 8px rgba(114,217,206,.08);transition:.25s ease}
+.cell-tracker-badge.complete{color:#ffe6a5;border-color:rgba(239,210,139,.62);background:rgba(52,42,18,.84);box-shadow:0 0 10px rgba(239,210,139,.25)}
+.cell-tracker-badge.plated{color:#e7fff9;border-color:rgba(124,224,211,.75);box-shadow:0 0 12px rgba(92,213,199,.38),inset 0 0 8px rgba(224,194,115,.14)}
+.cell-tracker-badge.failed{color:#ffd6ce;border-color:rgba(218,83,65,.72);background:rgba(65,9,7,.88);box-shadow:0 0 12px rgba(202,45,34,.32)}
+.cell.tracker-failed::before{content:"FAILED";position:absolute;z-index:7;left:50%;top:51%;transform:translate(-50%,-50%) rotate(-8deg);padding:2px 6px;border:1px solid rgba(239,96,75,.52);color:rgba(255,117,93,.72);font:700 clamp(8px,1.4vmin,13px)/1 "Arial Narrow",sans-serif;letter-spacing:.12em;text-shadow:0 0 8px #7c1009;pointer-events:none}
+.cell.has-tracker:hover .cell-tracker-badge,.cell.has-tracker:focus-visible .cell-tracker-badge{opacity:.28}
+.tracker-popover[hidden]{display:none}
+.tracker-popover{position:fixed;z-index:90;width:min(390px,calc(100vw - 24px));max-height:min(78vh,650px);overflow:auto;padding:18px 18px 15px;color:#d8d2bd;background:linear-gradient(145deg,rgba(13,27,24,.985),rgba(3,8,7,.99) 68%);border:1px solid rgba(135,198,185,.44);box-shadow:0 22px 60px rgba(0,0,0,.82),inset 0 1px rgba(229,218,177,.18),0 0 28px rgba(65,161,150,.14);clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));backdrop-filter:blur(13px);scrollbar-color:#4c887f #08110f}
+.tracker-popover::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#72d9ce,rgba(232,207,143,.82),transparent 82%);box-shadow:0 0 12px rgba(114,217,206,.62)}
+.tracker-popover::after{content:"FIELD DATA / LIVE";position:absolute;right:17px;top:13px;color:rgba(114,217,206,.36);font-size:6px;letter-spacing:.18em}
+.tracker-popover__meta{display:block;margin-bottom:7px;color:#77a49a;font-size:8px;letter-spacing:.22em}
+.tracker-popover h2{margin:0 34px 4px 0;color:#f0e6ca;font-size:20px;font-weight:500;letter-spacing:.08em;text-shadow:0 0 12px rgba(232,207,143,.18)}
+.tracker-popover__condition{margin:0 0 15px;color:#899b92;font-size:11px;line-height:1.55}
+.tracker-popover__label{display:block;margin-bottom:7px;color:#b9c6b9;font-size:10px;letter-spacing:.12em}
+.counter-stepper{display:grid;grid-template-columns:42px 1fr 42px;height:54px;border:1px solid rgba(114,217,206,.32);background:rgba(0,0,0,.34);box-shadow:inset 0 0 20px rgba(67,151,142,.07)}
+.counter-stepper button{border:0;color:#88d8ce;background:rgba(16,45,40,.5);font-size:24px;cursor:pointer;transition:.2s ease}
+.counter-stepper button:hover,.counter-stepper button:focus-visible{outline:0;color:#fff4d2;background:rgba(56,98,87,.68)}
+.counter-stepper input{min-width:0;border:0;border-right:1px solid rgba(114,217,206,.24);border-left:1px solid rgba(114,217,206,.24);outline:0;color:#fff0c4;background:transparent;text-align:center;font:500 25px/1 "Bahnschrift Condensed","Microsoft YaHei UI",sans-serif;text-shadow:0 0 9px rgba(237,208,136,.25);appearance:textfield}
+.counter-stepper input::-webkit-inner-spin-button,.counter-stepper input::-webkit-outer-spin-button{appearance:none;margin:0}
+.counter-progress{height:3px;margin-top:12px;background:rgba(114,217,206,.1);overflow:hidden}
+.counter-progress i{display:block;width:0;height:100%;background:linear-gradient(90deg,#3e8d84,#75dfd3 65%,#ead195);box-shadow:0 0 9px rgba(114,217,206,.65);transition:width .28s ease}
+.tracker-checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:300px;overflow:auto;padding-right:3px}
+.tracker-option{position:relative;min-height:34px;border:1px solid rgba(114,217,206,.18);padding:7px 8px 7px 26px;color:#94aaa2;background:linear-gradient(105deg,rgba(18,44,39,.52),rgba(3,10,8,.62));text-align:left;font:10px/1.35 "Microsoft YaHei UI",sans-serif;cursor:pointer;transition:.18s ease}
+.tracker-option::before{content:"";position:absolute;left:9px;top:50%;width:8px;height:8px;transform:translateY(-50%) rotate(45deg);border:1px solid rgba(114,217,206,.42);background:#07100e}
+.tracker-option:hover,.tracker-option:focus-visible{outline:0;border-color:rgba(230,205,140,.48);color:#eee2bf}
+.tracker-option.active{border-color:rgba(116,216,204,.56);color:#e8f4e8;background:linear-gradient(105deg,rgba(33,83,73,.72),rgba(17,32,25,.75));box-shadow:inset 2px 0 #d9c585,0 0 10px rgba(77,170,160,.12)}
+.tracker-option.active::before{border-color:#e5d69f;background:#5fc4b8;box-shadow:0 0 7px rgba(95,196,184,.65)}
+.tracker-failure{border:1px solid rgba(177,70,57,.32);padding:14px;background:repeating-linear-gradient(135deg,rgba(90,23,17,.16) 0 7px,rgba(4,10,9,.2) 7px 14px)}
+.tracker-failure p{margin:0 0 11px;color:#9e8c84;font-size:10px;line-height:1.55}
+.tracker-failure button{width:100%;border:1px solid rgba(217,82,64,.58);padding:12px;color:#ffb8aa;background:rgba(86,18,12,.62);font:600 11px/1 "Microsoft YaHei UI",sans-serif;letter-spacing:.12em;cursor:pointer}
+.tracker-failure button.active{border-color:rgba(114,217,206,.48);color:#c8eee7;background:rgba(17,67,59,.62)}
+.tracker-popover__status{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:#82928a;font-size:9px;letter-spacing:.08em}
+.tracker-popover__status strong{color:#d9c68f;font-weight:500;text-align:right}
+.tracker-popover__footer{display:flex;justify-content:space-between;align-items:center;margin-top:15px;padding-top:10px;border-top:1px solid rgba(193,203,183,.12);color:#5f746d;font-size:7px;letter-spacing:.13em}
+.tracker-close{border:1px solid rgba(114,217,206,.28);padding:6px 12px;color:#bcd4cb;background:rgba(23,54,48,.54);cursor:pointer;font-size:9px;letter-spacing:.14em}
+.tracker-close:hover,.tracker-close:focus-visible{outline:0;border-color:#d8c58c;color:#fff1c9}
+@media(max-width:700px){.cell-tracker-badge{right:2px;bottom:2px;padding:1px 2px;font-size:6px}.tracker-popover{padding:16px 15px 13px}.tracker-popover h2{font-size:18px}.tracker-checklist{grid-template-columns:1fr}}
+
+/* ==========================================================
+   F 级系数词条与积分结算终端
+   ========================================================== */
+.f-tier,.score-terminal{position:relative;width:min(96vw,1120px);margin-top:20px;border:1px solid rgba(119,176,166,.25);background:linear-gradient(115deg,rgba(9,22,19,.9),rgba(3,8,7,.94));box-shadow:0 18px 50px rgba(0,0,0,.42),inset 0 1px rgba(225,215,184,.08)}
+.f-tier::before,.score-terminal::before{content:"";position:absolute;left:0;right:38%;top:-1px;height:1px;background:linear-gradient(90deg,#72d9ce,rgba(218,195,133,.65),transparent)}
+.terminal-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;padding:12px 15px 10px;border-bottom:1px solid rgba(122,173,163,.18)}
+.terminal-heading strong{color:#e2d9bd;font-size:13px;font-weight:500;letter-spacing:.16em}.terminal-heading span{color:#68867f;font-size:7px;letter-spacing:.15em}
+.f-tier__scroll{overflow-x:auto;scrollbar-color:#4b877e #07100e}.f-tier__grid{display:grid;grid-template-columns:repeat(9,minmax(112px,1fr));gap:5px;min-width:1048px;padding:8px}
+.f-card{position:relative;min-height:112px;border:1px solid rgba(120,156,147,.22);padding:28px 8px 24px;color:#c8c6b7;background:linear-gradient(150deg,rgba(21,40,35,.72),rgba(5,11,9,.88));cursor:pointer;overflow:hidden;transition:.22s ease}
+.f-card::before{content:"+0.05";position:absolute;right:6px;top:5px;color:#76bbb1;font-size:7px;letter-spacing:.08em}.f-card::after{content:attr(data-index);position:absolute;left:6px;bottom:5px;color:#53746e;font-size:7px;letter-spacing:.1em}
+.f-card strong{display:block;margin-bottom:8px;color:#e6ddc4;font-size:12px;font-weight:600;text-align:center}.f-card span{display:block;color:#859a92;font-size:8px;line-height:1.45;text-align:center}
+.f-card:hover,.f-card:focus-visible{outline:0;border-color:rgba(114,217,206,.62);transform:translateY(-2px);box-shadow:inset 0 2px #72d9ce,0 9px 18px rgba(0,0,0,.35)}
+.f-card.selected{border-color:rgba(232,205,151,.7);background:linear-gradient(145deg,rgba(116,24,36,.94),rgba(35,8,13,.96));box-shadow:inset 0 2px #d9ba78,0 0 16px rgba(145,21,36,.28)}
+.f-card.selected::after{content:"✓ " attr(data-index);color:#ead7b2}.f-card.selected::before{color:#ffe0a0;text-shadow:0 0 8px rgba(255,216,132,.45)}
+.score-terminal{width:min(96vw,900px);margin-top:14px;padding-bottom:14px}.score-inputs{display:grid;grid-template-columns:1.45fr 1fr;gap:10px;padding:12px}
+.score-card{border:1px solid rgba(112,157,149,.2);padding:13px;background:rgba(3,10,8,.5)}.score-card h3{margin:0 0 4px;color:#ddd4b9;font-size:12px;font-weight:500;letter-spacing:.1em}.score-card>p{margin:0 0 12px;color:#718880;font-size:8px;line-height:1.45}
+.recruit-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.score-field{display:block}.score-field span{display:block;margin-bottom:5px;color:#8ba49c;font-size:8px;letter-spacing:.06em}.score-field input{width:100%;height:38px;border:1px solid rgba(114,217,206,.25);outline:0;color:#fff0c8;background:rgba(0,0,0,.35);text-align:center;font:500 18px/1 "Bahnschrift Condensed","Microsoft YaHei UI",sans-serif}.score-field input:focus{border-color:#d5bf80;box-shadow:0 0 12px rgba(114,217,206,.14)}
+.score-action{display:grid;grid-template-columns:minmax(210px,300px) 1fr;align-items:stretch;gap:12px;padding:0 12px}.score-btn{position:relative;min-height:62px;border:1px solid rgba(216,193,130,.5);color:#f1e5c2;background:linear-gradient(135deg,rgba(47,74,66,.92),rgba(10,28,24,.96));cursor:pointer;font-size:14px;font-weight:600;letter-spacing:.22em;box-shadow:inset 0 2px rgba(114,217,206,.45),0 10px 24px rgba(0,0,0,.35)}.score-btn::after{content:"CALCULATE FINAL SCORE";display:block;margin-top:5px;color:#6faaa0;font-size:6px;font-weight:400;letter-spacing:.18em}.score-btn:hover,.score-btn:focus-visible{outline:0;filter:brightness(1.18);box-shadow:inset 0 2px #e5d398,0 0 20px rgba(79,180,167,.2)}
+.score-result{display:flex;align-items:center;justify-content:space-between;gap:14px;border-left:2px solid rgba(114,217,206,.42);padding:10px 14px;background:linear-gradient(90deg,rgba(21,57,50,.45),transparent)}.score-result__breakdown{color:#80938c;font-size:8px;line-height:1.75;letter-spacing:.04em}.score-result__breakdown b{color:#d9cfb3;font-weight:500}.score-result__total{text-align:right;color:#79a69d;font-size:8px;letter-spacing:.12em;white-space:nowrap}.score-result__total strong{display:block;color:#ffe5a4;font-size:28px;font-weight:500;letter-spacing:.04em;text-shadow:0 0 14px rgba(239,205,124,.24)}
+.score-result.flash{animation:scoreFlash .65s ease-out}@keyframes scoreFlash{35%{filter:brightness(1.45);box-shadow:inset 4px 0 #f1d691}to{filter:none}}
+@media(max-width:700px),(pointer:coarse) and (max-width:1000px){.site>.f-tier,.site>.score-terminal{width:100%;max-width:480px;margin-left:auto;margin-right:auto}.f-tier{margin-top:14px}.f-tier__grid{grid-template-columns:repeat(9,126px);min-width:max-content}.f-card{min-height:118px}.score-terminal{margin-top:12px}.terminal-heading{align-items:flex-start;flex-direction:column;gap:4px}.score-inputs{grid-template-columns:1fr}.score-action{grid-template-columns:1fr}.score-result{min-height:82px}.score-btn{min-height:56px}}
 </style>
 </head>
 <body>
@@ -503,14 +482,22 @@ button{font:inherit}
   <div class="boot__sigil"></div><div class="boot__ring"></div><div class="boot__logo"></div>
   <div class="boot__readout"><strong>BLACKFLOW ARCHIVE / ACCESS REQUEST</strong><div class="boot__progress"></div><div class="boot__status"><span>CALIBRATING OBSERVATION MATRIX</span><span>25 / 25</span></div></div>
   <div class="boot__skip">CLICK / ENTER TO SKIP</div><div class="boot__shutter boot__shutter--top"></div><div class="boot__shutter boot__shutter--bottom"></div>
-</div><div class="sound-dock"><button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">点击播放</button><button id="scoreToggle" class="score-toggle" type="button" aria-pressed="true">计分: 开</button><button id="exportBtn" class="board-io-btn" type="button" title="导出当前表格为 JSON 文件">导出表格</button>
-<button id="importBtn" class="board-io-btn" type="button" title="从 JSON 文件导入表格">导入表格</button>
-<input id="importFile" type="file" accept=".json,application/json" hidden></div><audio id="bgmIntro" preload="auto" src="assets/blackflow/audio/drowning-dream-intro.mp3"></audio><audio id="bgmLoop" loop preload="auto" src="assets/blackflow/audio/drowning-dream-loop.mp3"></audio><div class="world" aria-hidden="true"><div class="world__base"></div><div class="world__color"></div><div class="world__nav"></div><div class="world__orb"></div><div class="world__mask"></div><div class="world__grain"></div></div>
+</div><div class="sound-dock"><button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">点击播放</button><button id="exportBtn" class="board-io-btn" type="button" title="导出当前表格与记录为 JSON 文件">导出表格</button><button id="importBtn" class="board-io-btn" type="button" title="从 JSON 文件恢复表格与记录">导入表格</button><input id="importFile" type="file" accept=".json,application/json" hidden></div><audio id="bgmIntro" preload="auto" src="assets/blackflow/audio/drowning-dream-intro.mp3"></audio><audio id="bgmLoop" loop preload="auto" src="assets/blackflow/audio/drowning-dream-loop.mp3"></audio><div class="world" aria-hidden="true"><div class="world__base"></div><div class="world__color"></div><div class="world__nav"></div><div class="world__orb"></div><div class="world__mask"></div><div class="world__grain"></div></div>
+<aside id="trackerPopover" class="tracker-popover" role="dialog" aria-modal="false" aria-labelledby="trackerTitle" hidden>
+  <span class="tracker-popover__meta">BLACKFLOW / 观测记录终端</span><h2 id="trackerTitle">词条记录</h2><p id="trackerCondition" class="tracker-popover__condition"></p>
+  <section id="trackerCounterPane" hidden><label id="trackerCounterLabel" class="tracker-popover__label" for="trackerInput">已记录数量</label><div class="counter-stepper"><button id="trackerMinus" type="button" aria-label="减少">−</button><input id="trackerInput" type="number" inputmode="numeric" min="0" step="1" value="0"><button id="trackerPlus" type="button" aria-label="增加">+</button></div></section>
+  <section id="trackerChecklistPane" hidden><span id="trackerChecklistLabel" class="tracker-popover__label">已观测项目</span><div id="trackerChecklist" class="tracker-checklist"></div></section>
+  <section id="trackerFailurePane" class="tracker-failure" hidden><p>发生违反条件的情况时在此标记。失败标记会保留，并取消该词条当前的完成状态。</p><button id="trackerFailureToggle" type="button">标记为失败</button></section>
+  <div class="counter-progress" aria-hidden="true"><i id="trackerProgress"></i></div><div class="tracker-popover__status"><span id="trackerSaved">本盘记录</span><strong id="trackerTarget"></strong></div><div class="tracker-popover__footer"><span>RIGHT CLICK / ESC TO CLOSE</span><button id="trackerClose" class="tracker-close" type="button">确认并关闭</button></div>
+</aside>
 <main class="site"><header class="masthead"><div><div class="masthead__eyebrow">Integrated Strategies · Field Record</div><h1 class="masthead__logo" aria-label="沉沦者的黑流树海 · 烂果杯宾果"></h1></div><div class="masthead__index"><b>ISW-BF / 25</b>PRIVATE ARCHIVE<br>ACCESS GRANTED</div></header>
 <div class="context"><i class="context__line"></i><div class="context__copy"><strong>烂果杯 · 探索记录</strong><span>SELECT A NODE TO MARK THE OBSERVATION</span></div><i class="context__line"></i></div>
-<section class="experience" aria-label="黑流树海宾果终端"><div class="experience__aura" aria-hidden="true"></div><div class="experience__well" aria-hidden="true"></div><div class="board-frame"><div class="scan"></div><section id="board" class="board" aria-label="5乘5宾果表格"></section><div id="bingoLines" class="bingo-lines" aria-hidden="true"></div><div id="bingoBurst" class="bingo-burst" aria-hidden="true"></div><div id="totalScoreOverlay" class="total-score">0</div></div></section>
-<aside class="node-detail" aria-label="词条说明"><span class="node-detail__meta" id="detailMeta">OBSERVATION / 词条档案</span><h2 id="detailTitle">点击格子，记录你的探索</h2><p id="detailBody">点击标记或取消标记，下方会展示对应条件。连成一线即为宾果。</p><p id="detailPlate" class="node-detail__plate"></p></aside>
-<section class="controls" aria-label="宾果控制"><div class="meter"><strong id="selectedCount">00 / 25</strong>OBSERVED NODES</div><button id="drawBtn" class="draw-btn" type="button">随机抽取</button><div class="meter meter--right"><strong id="archiveId">BF-0000</strong>ARCHIVE SEED</div></section><footer class="footer"><span>FAN-MADE · PRIVATE NON-COMMERCIAL USE</span><span>BLACKFLOW ARCHIVE // ONLINE</span></footer></main>
+<section class="experience" aria-label="黑流树海宾果终端"><div class="experience__aura" aria-hidden="true"></div><div class="experience__well" aria-hidden="true"></div><div class="board-frame"><div class="scan"></div><section id="board" class="board" aria-label="5乘5宾果表格"></section><div id="bingoLines" class="bingo-lines" aria-hidden="true"></div><div id="bingoBurst" class="bingo-burst" aria-hidden="true"></div></div></section>
+<aside class="node-detail" aria-label="词条说明"><span class="node-detail__meta" id="detailMeta">OBSERVATION / 词条档案</span><h2 id="detailTitle">点击格子，记录你的探索</h2><p id="detailBody">有镀层的词条依次切换未完成、普通完成与镀层完成；连成一线即为宾果。</p><p id="detailPlate" class="node-detail__plate"></p></aside>
+<section class="controls" aria-label="宾果控制"><div class="meter"><strong id="selectedCount">00 / 25</strong>OBSERVED NODES</div><button id="drawBtn" class="draw-btn" type="button">随机抽取</button><div class="meter meter--right"><strong id="archiveId">BF-0000</strong>ARCHIVE SEED</div></section>
+<section class="f-tier" aria-labelledby="fTierTitle"><div class="terminal-heading"><strong id="fTierTitle">F 级 · 额外得分系数</strong><span id="fTierStatus">每完成一项，最终得分系数 +0.05</span></div><div class="f-tier__scroll"><div id="fTierGrid" class="f-tier__grid"></div></div></section>
+<section class="score-terminal" aria-labelledby="scoreTitle"><div class="terminal-heading"><strong id="scoreTitle">额外积分与最终结算</strong><span>EXTRA SCORE / FINAL CALCULATION</span></div><div class="score-inputs"><article class="score-card"><h3>临时招募</h3><p>应急助力干员不计入。请填写本局获得的临时招募数量。</p><div class="recruit-inputs"><label class="score-field"><span>四星 · +10/名</span><input id="tempFour" type="number" min="0" max="99" step="1" value="0" inputmode="numeric"></label><label class="score-field"><span>五星 · +20/名</span><input id="tempFive" type="number" min="0" max="99" step="1" value="0" inputmode="numeric"></label><label class="score-field"><span>六星 · +50/名</span><input id="tempSix" type="number" min="0" max="99" step="1" value="0" inputmode="numeric"></label></div></article><article class="score-card"><h3>特殊敌人</h3><p>鸭爵 / 高普尼克 / 流泪小子 / 圆仔；空值体幻化的不计。</p><label class="score-field"><span>未进入保护目标点 · +20/个</span><input id="specialEnemyCount" type="number" min="0" max="99" step="1" value="0" inputmode="numeric"></label></article></div><div class="score-action"><button id="scoreBtn" class="score-btn" type="button">计算总分</button><output id="scoreResult" class="score-result" aria-live="polite"><span id="scoreBreakdown" class="score-result__breakdown">完成词条、Bingo、镀层与额外分将在这里汇总。</span><span class="score-result__total">TOTAL SCORE<strong id="scoreTotal">—</strong></span></output></div></section>
+<footer class="footer"><span>FAN-MADE · PRIVATE NON-COMMERCIAL USE</span><span>BLACKFLOW ARCHIVE // ONLINE</span></footer></main>
 <script src="bingo-data.js"></script>
 <script>
 const bootEl=document.getElementById('boot'),siteEl=document.querySelector('.site');let openingFinished=false,openingTimer;
@@ -531,6 +518,31 @@ setSound(true);
 function finishOpening(immediate=false){if(openingFinished)return;openingFinished=true;clearTimeout(openingTimer);playSound('modal',.08);bootEl.classList.add('finishing');window.setTimeout(()=>{siteEl.classList.add('revealed');bootEl.classList.add('done')},immediate?360:900)}
 bootEl.addEventListener('click',()=>finishOpening(true));bootEl.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();finishOpening(true)}});openingTimer=window.setTimeout(()=>finishOpening(false),2550);
 const BINGO_DATA = window.BINGO_DATA || [];
+const BINGO_F_DATA = window.BINGO_F_DATA || [];
+const trackerPopover=document.getElementById('trackerPopover'),trackerInput=document.getElementById('trackerInput'),trackerProgress=document.getElementById('trackerProgress'),trackerSaved=document.getElementById('trackerSaved'),trackerTarget=document.getElementById('trackerTarget');
+const trackerSession=new Map();let activeTracker=null;
+function trackerDefault(config){return config.type==='counter'?{value:config.min||0}:config.type==='checklist'?{selected:[]}:{failed:false}}
+function normalizeTrackerState(raw,config){const fallback=trackerDefault(config);if(!raw||typeof raw!=='object')return fallback;if(config.type==='counter'){const n=Math.floor(Number(raw.value));return{value:Number.isFinite(n)?Math.max(config.min||0,n):fallback.value}}if(config.type==='checklist'){const valid=new Set(config.options||[]);return{selected:Array.isArray(raw.selected)?[...new Set(raw.selected.filter(x=>valid.has(x)))]:[]}}return{failed:raw.failed===true}}
+function readTrackerState(id,config){return normalizeTrackerState(trackerSession.get(id),config)}
+function trackerAmount(state,config){return config.type==='counter'?state.value:config.type==='checklist'?state.selected.length:state.failed?1:0}
+function trackerStatus(amount,config){if(config.type==='failure')return{complete:false,plated:false};return{complete:amount>=config.target,plated:Boolean(config.platedTarget&&amount>=config.platedTarget)}}
+function paintTrackerBadge(cell,state,config){const badge=cell.querySelector('.cell-tracker-badge');if(!badge)return;const amount=trackerAmount(state,config),status=trackerStatus(amount,config),failed=config.type==='failure'&&state.failed;badge.textContent=failed?'失败':config.type==='failure'?'可标记':amount+' / '+(config.platedTarget||config.target);badge.classList.toggle('failed',failed);badge.classList.toggle('complete',status.complete);badge.classList.toggle('plated',status.plated);cell.classList.toggle('tracker-failed',failed);cell.classList.toggle('tracker-complete',status.complete);cell.classList.toggle('tracker-plated',status.plated)}
+function targetText(amount,config){if(config.type==='failure')return amount?'状态：已失败':'状态：条件有效';if(config.platedTarget&&amount>=config.platedTarget)return'镀层记录已达成';if(amount>=config.target)return config.platedTarget?'普通达成 · 镀层 '+config.platedTarget+config.unit:'条件已达成';return'目标 '+config.target+(config.unit||'项')}
+function refreshTrackerPanel(state){if(!activeTracker)return;const config=activeTracker.config,amount=trackerAmount(state,config),max=config.type==='failure'?1:(config.platedTarget||config.target),progress=config.type==='failure'?(state.failed?100:0):Math.min(100,amount/max*100);trackerProgress.style.width=progress+'%';trackerTarget.textContent=targetText(amount,config);trackerSaved.textContent=config.type==='failure'?(state.failed?'FAILURE RECORDED':'条件仍然有效'):(amount>=config.target?'OBSERVATION COMPLETE':'本盘记录 · 当前 '+amount+(config.unit||' 项'));if(config.type==='counter')trackerInput.value=String(state.value);if(config.type==='checklist'){document.querySelectorAll('#trackerChecklist .tracker-option').forEach(button=>{const selected=state.selected.includes(button.dataset.value);button.classList.toggle('active',selected);button.setAttribute('aria-pressed',String(selected))})}if(config.type==='failure'){const toggle=document.getElementById('trackerFailureToggle');toggle.textContent=state.failed?'恢复为可完成':'标记为失败';toggle.classList.toggle('active',state.failed);toggle.setAttribute('aria-pressed',String(state.failed))}boardEl.querySelectorAll('[data-entry-id="'+activeTracker.id+'"]').forEach(cell=>paintTrackerBadge(cell,state,config))}
+function saveActiveTracker(state){if(!activeTracker)return;const normalized=normalizeTrackerState(state,activeTracker.config);trackerSession.set(activeTracker.id,normalized);activeTracker.state=normalized;refreshTrackerPanel(normalized)}
+function setActiveCounterValue(value){if(!activeTracker||activeTracker.config.type!=='counter')return;saveActiveTracker({value:value})}
+function closeTrackerPanel(){if(trackerPopover.hidden)return;trackerPopover.hidden=true;activeTracker=null}
+function renderChecklist(config,state){const list=document.getElementById('trackerChecklist');list.replaceChildren(...config.options.map(function(option){const button=document.createElement('button');button.type='button';button.className='tracker-option';button.dataset.value=option;button.textContent=option;button.classList.toggle('active',state.selected.includes(option));button.setAttribute('aria-pressed',String(state.selected.includes(option)));button.addEventListener('click',function(){if(!activeTracker)return;const selected=new Set(activeTracker.state.selected);selected.has(option)?selected.delete(option):selected.add(option);saveActiveTracker({selected:[...selected]});playSound('click',.05)});return button}));list.scrollTop=0}
+function openTrackerPanel(cell,entry,event){const config=entry.tracker,state=readTrackerState(entry.id,config),cellRect=cell.getBoundingClientRect(),anchorX=event.clientX||cellRect.right,anchorY=event.clientY||cellRect.top;activeTracker={id:entry.id,config:config,state:state,cell:cell};document.getElementById('trackerTitle').textContent=entry.title;document.getElementById('trackerCondition').textContent=entry.body;document.getElementById('trackerCounterPane').hidden=config.type!=='counter';document.getElementById('trackerChecklistPane').hidden=config.type!=='checklist';document.getElementById('trackerFailurePane').hidden=config.type!=='failure';if(config.type==='counter'){trackerInput.min=String(config.min||0);trackerInput.setAttribute('aria-label',config.label);document.getElementById('trackerCounterLabel').textContent=config.label}if(config.type==='checklist'){document.getElementById('trackerChecklistLabel').textContent=config.label;renderChecklist(config,state)}refreshTrackerPanel(state);trackerPopover.hidden=false;requestAnimationFrame(function(){const rect=trackerPopover.getBoundingClientRect(),margin=12;let left=anchorX+12,top=anchorY+12;if(left+rect.width>innerWidth-margin)left=innerWidth-rect.width-margin;if(top+rect.height>innerHeight-margin)top=innerHeight-rect.height-margin;trackerPopover.style.left=Math.max(margin,left)+'px';trackerPopover.style.top=Math.max(margin,top)+'px';if(config.type==='counter'){trackerInput.focus();trackerInput.select()}});playSound('paper',.06)}
+trackerInput.addEventListener('input',function(){if(trackerInput.value!=='')setActiveCounterValue(trackerInput.value)});
+trackerInput.addEventListener('change',function(){setActiveCounterValue(trackerInput.value)});
+document.getElementById('trackerMinus').addEventListener('click',function(){if(activeTracker)setActiveCounterValue(Number(trackerInput.value)-1)});
+document.getElementById('trackerPlus').addEventListener('click',function(){if(activeTracker)setActiveCounterValue(Number(trackerInput.value)+1)});
+document.getElementById('trackerFailureToggle').addEventListener('click',function(){if(!activeTracker||activeTracker.config.type!=='failure')return;const failed=!activeTracker.state.failed;saveActiveTracker({failed:failed});if(failed){boardEl.querySelectorAll('[data-entry-id="'+activeTracker.id+'"]').forEach(cell=>setCellState(cell,'idle'));updateSelectedCount();checkBingo();markScorePending()}playSound(failed?'glitch':'paper',.06)});
+document.getElementById('trackerClose').addEventListener('click',closeTrackerPanel);
+document.addEventListener('pointerdown',function(event){if(!trackerPopover.hidden&&!trackerPopover.contains(event.target)&&!event.target.closest('.has-tracker'))closeTrackerPanel()});
+document.addEventListener('keydown',function(event){if(event.key==='Escape')closeTrackerPanel()});
+window.addEventListener('resize',closeTrackerPanel);
 boardAudioSetup();
 function boardAudioSetup(){
  document.getElementById('board').addEventListener('click',function(event){
@@ -548,26 +560,27 @@ function boardAudioSetup(){
    }else{
      plateBox.style.display='none';
    }
-   document.getElementById('detailMeta').textContent='NODE '+cell.dataset.index+' / '+(cell.classList.contains('selected')?'已记录':'未记录');
+   const stateLabel=cell.classList.contains('plated-complete')?'镀层完成':cell.classList.contains('selected')?'普通完成':'未完成';
+   document.getElementById('detailMeta').textContent='NODE '+cell.dataset.index+' / '+stateLabel;
  });
  document.getElementById('drawBtn').addEventListener('click',function(){
    document.getElementById('detailTitle').textContent='新的探索档案已生成';
-   document.getElementById('detailBody').textContent='点击格子标记，下方查看对应条件。';
+   document.getElementById('detailBody').textContent='有镀层的词条可依次切换普通完成与镀层完成；下方会展示对应条件。';
    document.getElementById('detailMeta').textContent='OBSERVATION / 词条档案';
    document.getElementById('detailPlate').style.display='none';
  });
 }
-const CELL_COUNT=25,boardEl=document.getElementById('board'),drawBtn=document.getElementById('drawBtn');
-/* 每个等级的分数 */
-const LEVEL_SCORES = { 1: 50, 2: 80, 3: 80, 4: 120, 5: 200 };
-/* 每条连线分数 */
-const LINE_SCORE = 600;
-/* 当前得分与连线数 */
-let currentScore = 0;
-let activeLines = 0;
-/* 计分显示开关状态 */
-let scoreVisible = true;
-
+const CELL_COUNT=25,boardEl=document.getElementById('board'),drawBtn=document.getElementById('drawBtn'),fTierGrid=document.getElementById('fTierGrid');
+const scoreInputs=['tempFour','tempFive','tempSix','specialEnemyCount'].map(id=>document.getElementById(id));
+let scoreWasCalculated=false;
+function markScorePending(){if(!scoreWasCalculated)return;document.getElementById('scoreTotal').textContent='—';document.getElementById('scoreBreakdown').textContent='记录已变化，请重新计算总分。';scoreWasCalculated=false}
+function renderFTier(){const frag=document.createDocumentFragment();BINGO_F_DATA.forEach(function(entry,index){const card=document.createElement('button');card.type='button';card.className='f-card';card.dataset.id=entry.id;card.dataset.coefficient=String(entry.coefficient||.05);card.dataset.index='F'+String(index+1).padStart(2,'0');card.setAttribute('aria-pressed','false');card.setAttribute('aria-label',entry.title+'：'+entry.body+'；完成后得分系数 +'+(entry.coefficient||.05));const title=document.createElement('strong'),body=document.createElement('span');title.textContent=entry.title;body.textContent=entry.body;card.append(title,body);card.addEventListener('click',function(){const selected=!card.classList.contains('selected');card.classList.toggle('selected',selected);card.setAttribute('aria-pressed',String(selected));const count=fTierGrid.querySelectorAll('.f-card.selected').length;document.getElementById('fTierStatus').textContent='已完成 '+count+' / '+BINGO_F_DATA.length+' · 当前系数 +'+(count*.05).toFixed(2);document.getElementById('detailMeta').textContent='EXTRA COEFFICIENT / F 级词条';document.getElementById('detailTitle').textContent=entry.title;document.getElementById('detailBody').textContent=entry.body;document.getElementById('detailPlate').style.display='none';markScorePending();playSound('click',.065)});frag.appendChild(card)});fTierGrid.replaceChildren(frag)}
+function normalizedScoreInput(input){const n=Math.floor(Number(input.value));const value=Number.isFinite(n)?Math.min(99,Math.max(0,n)):0;input.value=String(value);return value}
+function formatScore(value){return Number.isInteger(value)?String(value):value.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}
+function calculateScore(){checkBingo();let termScore=0,platedScore=0;boardEl.querySelectorAll('.cell').forEach(function(cell){const state=cell.dataset.state;if(state!=='normal'&&state!=='plated')return;const entry=BINGO_DATA.find(item=>String(item.id)===cell.dataset.entryId);if(!entry)return;termScore+=Number(entry.score)||0;if(state==='plated')platedScore+=Number(entry.score)||0});const bingoCount=document.querySelectorAll('#bingoLines .bingo-line').length,bingoScore=bingoCount*600;const four=normalizedScoreInput(document.getElementById('tempFour')),five=normalizedScoreInput(document.getElementById('tempFive')),six=normalizedScoreInput(document.getElementById('tempSix')),special=normalizedScoreInput(document.getElementById('specialEnemyCount'));const recruitScore=four*10+five*20+six*50,specialScore=special*20,extraScore=recruitScore+specialScore;const fCount=fTierGrid.querySelectorAll('.f-card.selected').length,coefficient=fCount*.05;const subtotal=termScore+bingoScore+platedScore+extraScore,total=subtotal*(1+coefficient);document.getElementById('scoreBreakdown').innerHTML='词条 <b>'+termScore+'</b>　Bingo '+bingoCount+'线 <b>'+bingoScore+'</b><br>镀层 <b>'+platedScore+'</b>　额外 <b>'+extraScore+'</b>　系数 <b>×'+(1+coefficient).toFixed(2)+'</b>';document.getElementById('scoreTotal').textContent=formatScore(total);const result=document.getElementById('scoreResult');result.classList.remove('flash');void result.offsetWidth;result.classList.add('flash');scoreWasCalculated=true;playSound('modal',.09)}
+function resetScoreExtras(){fTierGrid.querySelectorAll('.f-card').forEach(function(card){card.classList.remove('selected');card.setAttribute('aria-pressed','false')});document.getElementById('fTierStatus').textContent='每完成一项，最终得分系数 +0.05';scoreInputs.forEach(input=>input.value='0');document.getElementById('scoreTotal').textContent='—';document.getElementById('scoreBreakdown').textContent='完成词条、Bingo、镀层与额外分将在这里汇总。';scoreWasCalculated=false}
+scoreInputs.forEach(input=>input.addEventListener('input',markScorePending));
+document.getElementById('scoreBtn').addEventListener('click',calculateScore);
 /* 5×5 表格的位置分级（行优先，共 25 个） */
 const LEVEL_MAP=[
   1,3,5,2,4,
@@ -588,6 +601,15 @@ function pickEntries(levels){
       title:x.title.trim(),
       body:(x.body||'').trim(),
       plated:(x.plated||'').trim(),
+      tracker:x.tracker&&typeof x.tracker==='object'?{
+        type:['counter','checklist','failure'].includes(x.tracker.type)?x.tracker.type:'counter',
+        label:String(x.tracker.label||'观测记录'),
+        unit:String(x.tracker.unit||''),
+        target:Math.max(1,Math.floor(Number(x.tracker.target)||1)),
+        platedTarget:x.tracker.platedTarget?Math.max(1,Math.floor(Number(x.tracker.platedTarget))):null,
+        min:Math.max(0,Math.floor(Number(x.tracker.min)||0)),
+        options:Array.isArray(x.tracker.options)?x.tracker.options.map(String):[]
+      }:null,
       level:lv
     };
     (byLevel[lv]=byLevel[lv]||[]).push(item);
@@ -627,12 +649,13 @@ function renderBoard(entries){
   entries.forEach((entry,index)=>{
     const cell=document.createElement('button');
     cell.type='button';
-    cell.className='cell enter'+(entry.body?'':' no-body')+(entry.plated?' has-plate':'');
-    cell.setAttribute('aria-pressed','false');
-    cell.setAttribute('aria-label',entry.title+(entry.body?'：'+entry.body:'')+(entry.plated?'｜镀层：'+entry.plated:''));
-    cell.dataset.index=String(index+1).padStart(2,'0');
+    cell.className='cell enter'+(entry.body?'':' no-body')+(entry.plated?' has-plate':'')+(entry.tracker?' has-tracker':'');
+    cell.dataset.state='idle';
+    cell.dataset.entryId=String(entry.id);
     cell.dataset.level=String(entry.level||1);
-    cell.dataset.entryId=String(entry.id!==undefined?entry.id:-1);
+    cell.setAttribute('aria-pressed','false');
+    cell.setAttribute('aria-label',entry.title+(entry.body?'：'+entry.body:'')+(entry.plated?'｜镀层：'+entry.plated:'')+(entry.tracker?'｜右键打开'+entry.tracker.label:''));
+    cell.dataset.index=String(index+1).padStart(2,'0');
     cell.style.setProperty('--col',index%5);
     cell.style.setProperty('--row',Math.floor(index/5));
     cell.style.animationDelay=(index*20)+'ms';
@@ -658,6 +681,15 @@ function renderBoard(entries){
     levelTag.textContent=String(entry.level||1);
     cell.appendChild(levelTag);
 
+    if(entry.tracker){
+      const trackerBadge=document.createElement('span');
+      trackerBadge.className='cell-tracker-badge';
+      cell.appendChild(trackerBadge);
+      paintTrackerBadge(cell,readTrackerState(entry.id,entry.tracker),entry.tracker);
+      cell.addEventListener('contextmenu',function(event){event.preventDefault();event.stopPropagation();openTrackerPanel(cell,entry,event)});
+      cell.addEventListener('keydown',function(event){if(event.key==='ContextMenu'||(event.shiftKey&&event.key==='F10')){event.preventDefault();openTrackerPanel(cell,entry,event)}});
+    }
+
     // ---- 镀层虚影 ----
     if(entry.plated){
       const plate=document.createElement('span');
@@ -672,16 +704,6 @@ function renderBoard(entries){
       badge.textContent='可镀层';
       cell.appendChild(badge);
 
-      // 滚轮切换：正文 ⇄ 镀层内容
-      cell.addEventListener('wheel',function(ev){
-        ev.preventDefault();
-        ev.stopPropagation();
-        const isActive = cell.classList.toggle('plate-active');
-        // 同步切换右下角小字
-        const badge = cell.querySelector('.cell-plate-badge');
-        if (badge) badge.textContent = isActive ? '已镀层' : '可镀层';
-        playSound('paper',.05);
-      },{passive:false});
     }
 
     cell.addEventListener('click',ev=>handleCellClick(cell,ev));
@@ -701,187 +723,59 @@ function spawnRipple(cell,ev){
   Object.assign(r.style,{width:size+'px',height:size+'px',left:x+'px',top:y+'px'});
   cell.appendChild(r);r.addEventListener('animationend',()=>r.remove());
 }
-function handleCellClick(cell,ev){
-  playSound('click',.075);
-  spawnRipple(cell,ev);
-  cell.classList.remove('bounce');
-  void cell.offsetWidth;
-  cell.classList.add('bounce');
-  const selected=cell.classList.toggle('selected');
-  cell.setAttribute('aria-pressed',String(selected));
-  updateSelectedCount();
-  checkBingo();
-  updateScore();
-}
-/* 计算总分并更新虚影显示 */
-function updateScore(){
-  let baseScore=0;
-  boardEl.querySelectorAll('.cell.selected').forEach(function(cell){
-    const lv=parseInt(cell.dataset.level,10)||1;
-    baseScore+=LEVEL_SCORES[lv]||0;
-  });
-  currentScore=baseScore+activeLines*LINE_SCORE;
-  const overlay=document.getElementById('totalScoreOverlay');
-  if(overlay){
-    overlay.textContent=currentScore;
-  }
-}
+function setCellState(cell,state){cell.dataset.state=state;cell.classList.toggle('selected',state==='normal');cell.classList.toggle('plated-complete',state==='plated');cell.setAttribute('aria-pressed',state==='plated'?'mixed':String(state==='normal'));const badge=cell.querySelector('.cell-plate-badge');if(badge)badge.textContent=state==='plated'?'镀层完成':state==='normal'?'普通完成':'可镀层'}
+function handleCellClick(cell,ev){if(cell.classList.contains('tracker-failed')){playSound('glitch',.055);spawnRipple(cell,ev);return}playSound('click',.075);spawnRipple(cell,ev);cell.classList.remove('bounce');void cell.offsetWidth;cell.classList.add('bounce');const state=cell.dataset.state||'idle';const next=state==='idle'?'normal':state==='normal'&&cell.classList.contains('has-plate')?'plated':'idle';setCellState(cell,next);if(next==='plated')playSound('paper',.06);updateSelectedCount();checkBingo();markScorePending()}
+function updateSelectedCount(){const n=boardEl.querySelectorAll('.selected,.plated-complete').length;document.getElementById('selectedCount').textContent=String(n).padStart(2,'0')+' / 25'}
+function checkBingo(){const cells=[...boardEl.children],active=cells.map(c=>c.classList.contains('selected')||c.classList.contains('plated-complete'));const patterns=[];for(let r=0;r<5;r++)patterns.push({cells:[0,1,2,3,4].map(c=>r*5+c),type:'row',pos:10+r*20});for(let c=0;c<5;c++)patterns.push({cells:[0,1,2,3,4].map(r=>r*5+c),type:'col',pos:10+c*20});patterns.push({cells:[0,6,12,18,24],type:'diag',angle:'45deg'},{cells:[4,8,12,16,20],type:'diag',angle:'-45deg'});const wins=patterns.filter(p=>p.cells.every(i=>active[i]));cells.forEach(c=>c.classList.remove('winning'));wins.forEach(w=>w.cells.forEach(i=>cells[i].classList.add('winning')));const layer=document.getElementById('bingoLines'),oldCount=layer.children.length;layer.replaceChildren(...wins.map(w=>{const line=document.createElement('i');line.className='bingo-line '+(w.type==='col'?'vertical':w.type==='diag'?'diagonal':'');if(w.type==='row')line.style.setProperty('--y',w.pos+'%');if(w.type==='col')line.style.setProperty('--x',w.pos+'%');if(w.type==='diag')line.style.setProperty('--angle',w.angle);return line}));if(wins.length>oldCount){const burst=document.getElementById('bingoBurst');burst.classList.remove('active');void burst.offsetWidth;burst.classList.add('active')}}
+function draw(){closeTrackerPanel();trackerSession.clear();resetScoreExtras();playSound('glitch',.07);const frame=document.querySelector('.board-frame');frame.classList.remove('drawing');void frame.offsetWidth;frame.classList.add('drawing');setTimeout(()=>frame.classList.remove('drawing'),780);renderBoard(pickEntries(LEVEL_MAP));document.getElementById('bingoLines').replaceChildren();updateSelectedCount();document.getElementById('archiveId').textContent='BF-'+Math.floor(Math.random()*10000).toString().padStart(4,'0')}
 
-function updateSelectedCount(){const n=boardEl.querySelectorAll('.selected').length;document.getElementById('selectedCount').textContent=String(n).padStart(2,'0')+' / 25'}
-function checkBingo(){
-  const cells=[...boardEl.children],
-        active=cells.map(c=>c.classList.contains('selected'));
-  const patterns=[];
-  for(let r=0;r<5;r++)patterns.push({cells:[0,1,2,3,4].map(c=>r*5+c),type:'row',pos:10+r*20});
-  for(let c=0;c<5;c++)patterns.push({cells:[0,1,2,3,4].map(r=>r*5+c),type:'col',pos:10+c*20});
-  patterns.push({cells:[0,6,12,18,24],type:'diag',angle:'45deg'},{cells:[4,8,12,16,20],type:'diag',angle:'-45deg'});
-  const wins=patterns.filter(p=>p.cells.every(i=>active[i]));
-  activeLines=wins.length;
-  cells.forEach(c=>c.classList.remove('winning'));
-  wins.forEach(w=>w.cells.forEach(i=>cells[i].classList.add('winning')));
-  const layer=document.getElementById('bingoLines'),
-        oldCount=layer.children.length;
-  layer.replaceChildren(...wins.map(w=>{
-    const line=document.createElement('i');
-    line.className='bingo-line '+(w.type==='col'?'vertical':w.type==='diag'?'diagonal':'');
-    if(w.type==='row')line.style.setProperty('--y',w.pos+'%');
-    if(w.type==='col')line.style.setProperty('--x',w.pos+'%');
-    if(w.type==='diag')line.style.setProperty('--angle',w.angle);
-    return line;
-  }));
-  if(wins.length>oldCount){
-    const burst=document.getElementById('bingoBurst');
-    burst.classList.remove('active');
-    void burst.offsetWidth;
-    burst.classList.add('active');
-  }
-}
-function draw(){
-  playSound('glitch',.07);
-  const frame=document.querySelector('.board-frame');
-  frame.classList.remove('drawing');
-  void frame.offsetWidth;
-  frame.classList.add('drawing');
-  setTimeout(()=>frame.classList.remove('drawing'),780);
-  renderBoard(pickEntries(LEVEL_MAP));
-  document.getElementById('bingoLines').replaceChildren();
-  updateSelectedCount();
-  activeLines=0;
-  currentScore=0;
-  updateScore();
-  document.getElementById('archiveId').textContent='BF-'+Math.floor(Math.random()*10000).toString().padStart(4,'0');
-}
-/* 计分开关 */
-document.getElementById('scoreToggle').addEventListener('click',function(){
-  scoreVisible=!scoreVisible;
-  this.setAttribute('aria-pressed',String(scoreVisible));
-  this.textContent=scoreVisible?'计分: 开':'计分: 关';
-  document.getElementById('totalScoreOverlay').classList.toggle('hidden',!scoreVisible);
-});
-/* ==========================================================
-   导出当前表格
-   ========================================================== */
+/* 导出的版本 2 会保留当前布局、完成状态、右键记录、F 级选择与额外分输入。 */
 function exportBoard(){
   if(!boardEl.children.length)return;
-  const cells=[...boardEl.children];
-  const data={
-    version:1,
-    exportedAt:new Date().toISOString(),
-    cells:cells.map(function(cell){
-      const frontEl=cell.querySelector('.cell-front .cell-text');
-      const backEl=cell.querySelector('.cell-back .cell-text');
-      const plateEl=cell.querySelector('.cell-plate .cell-text');
-      return {
-        id:parseInt(cell.dataset.entryId,10),
-        level:parseInt(cell.dataset.level,10)||1,
-        title:frontEl?frontEl.textContent:'',
-        body:backEl?backEl.textContent:'',
-        plated:plateEl?plateEl.textContent:''
-      };
-    })
-  };
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  const ts=new Date();
-  const stamp=ts.getFullYear()
-    +String(ts.getMonth()+1).padStart(2,'0')
-    +String(ts.getDate()).padStart(2,'0')
-    +'-'
-    +String(ts.getHours()).padStart(2,'0')
-    +String(ts.getMinutes()).padStart(2,'0')
-    +String(ts.getSeconds()).padStart(2,'0');
-  a.href=url;
-  a.download='bingo-board-'+stamp+'.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  playSound('modal',.08);
+  const cells=[...boardEl.children].map(function(cell){
+    const frontEl=cell.querySelector('.cell-front .cell-text'),backEl=cell.querySelector('.cell-back .cell-text'),plateEl=cell.querySelector('.cell-plate .cell-text');
+    return{id:Number(cell.dataset.entryId),level:Number(cell.dataset.level)||1,title:frontEl?frontEl.textContent:'',body:backEl?backEl.textContent:'',plated:plateEl?plateEl.textContent:'',state:cell.dataset.state||'idle'};
+  });
+  const trackers={};
+  trackerSession.forEach(function(state,id){trackers[String(id)]=state});
+  const data={version:2,exportedAt:new Date().toISOString(),archiveId:document.getElementById('archiveId').textContent,cells:cells,trackers:trackers,fSelected:[...fTierGrid.querySelectorAll('.f-card.selected')].map(card=>card.dataset.id),extras:{tempFour:document.getElementById('tempFour').value,tempFive:document.getElementById('tempFive').value,tempSix:document.getElementById('tempSix').value,specialEnemyCount:document.getElementById('specialEnemyCount').value}};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a'),now=new Date();
+  const stamp=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+String(now.getSeconds()).padStart(2,'0');
+  link.href=url;link.download='bingo-board-'+stamp+'.json';document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);playSound('modal',.08);
 }
 
-/* ==========================================================
-   导入表格文件
-   ========================================================== */
 function importBoard(file){
   const reader=new FileReader();
-  reader.onload=function(e){
+  reader.onload=function(event){
     try{
-      const raw=JSON.parse(e.target.result);
-      let cells=null;
-      if(Array.isArray(raw))cells=raw;
-      else if(raw&&Array.isArray(raw.cells))cells=raw.cells;
-      if(!cells||!cells.length)throw new Error('文件中没有找到词条数据');
-
-      // 补齐或截断为 25 项
-      while(cells.length<CELL_COUNT){
-        const i=cells.length;
-        cells.push({level:LEVEL_MAP[i]||1,title:'？',body:'',plated:''});
-      }
-      cells=cells.slice(0,CELL_COUNT).map(function(c,i){
-        c=c||{};
-        return {
-          id:(typeof c.id==='number'&&c.id>=0)?c.id:-1,
-          level:parseInt(c.level,10)||LEVEL_MAP[i]||1,
-          title:(typeof c.title==='string'&&c.title.trim())?c.title:'？',
-          body:(typeof c.body==='string')?c.body:'',
-          plated:(typeof c.plated==='string')?c.plated:''
-        };
+      const raw=JSON.parse(event.target.result),source=Array.isArray(raw)?raw:raw&&raw.cells;
+      if(!Array.isArray(source)||!source.length)throw new Error('文件中没有找到词条数据');
+      const imported=source.slice(0,CELL_COUNT);
+      while(imported.length<CELL_COUNT)imported.push({level:LEVEL_MAP[imported.length]||1,title:'？',body:'',plated:'',state:'idle'});
+      const states=imported.map(item=>item&&['normal','plated'].includes(item.state)?item.state:'idle');
+      const entries=imported.map(function(item,index){
+        const value=item&&typeof item==='object'?item:{},id=Number(value.id),catalog=BINGO_DATA.find(entry=>Number(entry.id)===id&&entry.title===value.title),level=Math.min(5,Math.max(1,Number(value.level)||LEVEL_MAP[index]||1));
+        if(catalog)return{id:catalog.id,level:level,title:catalog.title,body:catalog.body||'',plated:catalog.plated||'',tracker:catalog.tracker||null};
+        return{id:Number.isFinite(id)?id:-1,level:level,title:typeof value.title==='string'&&value.title.trim()?value.title:'？',body:typeof value.body==='string'?value.body:'',plated:typeof value.plated==='string'?value.plated:'',tracker:null};
       });
-
-      renderBoard(cells);
-      document.getElementById('bingoLines').replaceChildren();
-      updateSelectedCount();
-      activeLines=0;
-      currentScore=0;
-      updateScore();
-      playSound('modal',.08);
-    }catch(err){
-      alert('导入失败：'+err.message);
-    }
+      closeTrackerPanel();trackerSession.clear();resetScoreExtras();
+      if(raw&&raw.trackers&&typeof raw.trackers==='object')entries.forEach(function(entry){if(!entry.tracker)return;const saved=raw.trackers[String(entry.id)];if(saved)trackerSession.set(entry.id,normalizeTrackerState(saved,entry.tracker))});
+      renderBoard(entries);
+      [...boardEl.children].forEach(function(cell,index){const entry=entries[index],state=entry.tracker&&entry.tracker.type==='failure'&&readTrackerState(entry.id,entry.tracker).failed?'idle':states[index];setCellState(cell,state)});
+      if(raw&&Array.isArray(raw.fSelected)){const selected=new Set(raw.fSelected.map(String));fTierGrid.querySelectorAll('.f-card').forEach(card=>{const active=selected.has(card.dataset.id);card.classList.toggle('selected',active);card.setAttribute('aria-pressed',String(active))})}
+      const fCount=fTierGrid.querySelectorAll('.f-card.selected').length;document.getElementById('fTierStatus').textContent=fCount?'已完成 '+fCount+' / '+BINGO_F_DATA.length+' · 当前系数 +'+(fCount*.05).toFixed(2):'每完成一项，最终得分系数 +0.05';
+      if(raw&&raw.extras&&typeof raw.extras==='object')scoreInputs.forEach(input=>{if(Object.prototype.hasOwnProperty.call(raw.extras,input.id))input.value=String(raw.extras[input.id])});
+      scoreInputs.forEach(normalizedScoreInput);document.getElementById('archiveId').textContent=raw&&typeof raw.archiveId==='string'?raw.archiveId.slice(0,32):'BF-IMPORT';
+      document.getElementById('bingoLines').replaceChildren();updateSelectedCount();checkBingo();document.getElementById('scoreTotal').textContent='—';document.getElementById('scoreBreakdown').textContent='已恢复记录，请点击“计算总分”。';scoreWasCalculated=false;
+      document.getElementById('detailMeta').textContent='ARCHIVE IMPORT / 档案已恢复';document.getElementById('detailTitle').textContent='表格与记录导入成功';document.getElementById('detailBody').textContent='已恢复格子状态、词条记录、F 级选择和额外积分输入。';document.getElementById('detailPlate').style.display='none';playSound('modal',.08);
+    }catch(error){alert('导入失败：'+error.message)}
   };
-  reader.onerror=function(){
-    alert('导入失败：无法读取文件');
-  };
-  reader.readAsText(file);
+  reader.onerror=function(){alert('导入失败：无法读取文件')};reader.readAsText(file);
 }
 
-/* ==========================================================
-   事件绑定
-   ========================================================== */
 drawBtn.addEventListener('click',draw);
-
 document.getElementById('exportBtn').addEventListener('click',exportBoard);
-
-document.getElementById('importBtn').addEventListener('click',function(){
-  document.getElementById('importFile').click();
-});
-
-document.getElementById('importFile').addEventListener('change',function(ev){
-  const file=ev.target.files&&ev.target.files[0];
-  if(file)importBoard(file);
-  ev.target.value='';   // 允许连续导入同一个文件
-});
-
-draw();
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change',function(event){const file=event.target.files&&event.target.files[0];if(file)importBoard(file);event.target.value=''});
+renderFTier();draw();
 </script></body></html>

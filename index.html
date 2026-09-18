@@ -930,7 +930,7 @@ button { font: inherit; }
    ============================================================ */
 .controls {
   position: relative;
-  width: min(82vmin, 620px);
+  width: min(90vmin, 1000px);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -941,6 +941,8 @@ button { font: inherit; }
   font-size: 9px;
   letter-spacing: .15em;
   color: #7f867d;
+  padding-left: 95px;
+  padding-right: 20px;
 }
 .meter strong {
   display: block;
@@ -950,7 +952,11 @@ button { font: inherit; }
   font-weight: 400;
   letter-spacing: .1em;
 }
-.meter--right { text-align: right; }
+.meter--right { 
+   text-align: center; 
+   padding: 0;
+   margin-left: 15px;
+}
 
 .draw-btn {
   position: relative;
@@ -3381,15 +3387,23 @@ function draw() {
   frame.classList.add('drawing');
   setTimeout(function () { frame.classList.remove('drawing'); }, 780);
 
-  renderBoard(pickEntries(LEVEL_MAP));
+  const entries = pickEntries(LEVEL_MAP);
+  console.log(entries);
+  renderBoard(entries);
   document.getElementById('bingoLines').replaceChildren();
   updateSelectedCount();
 
   activeLines = 0;
   updateScore();
 
-  document.getElementById('archiveId').textContent =
-    'BF-' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  let seed = '';
+  for (i in entries) {
+    let code = entries[i].id + 64;
+    if (code > 90) code += 6;
+    seed += String.fromCharCode(code);
+  }
+  console.log(seed);
+  document.getElementById('archiveId').textContent = seed;
 }
 
 /* ============================================================

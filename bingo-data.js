@@ -95,8 +95,8 @@ window.BINGO_DATA = [
   { id: 32, level: 1, grade: "E", score: 50, title: "深不见底", body: "至少使 25 名敌人入坑", tracker: { type: "counter", label: "已入坑人数", unit: "名", target: 25, min: 0 } },
   { id: 33, level: 1, grade: "E", score: 50, title: "动物学家", body: "获得过所有概念体", tracker: { type: "checklist", label: "概念体图鉴", options: BLACKFLOW_CONCEPTS, target: 6 } },
   { id: 34, level: 1, grade: "E", score: 50, title: "基石",     body: "通关时，携带干员夜刀、黑角" },
-  { id: 35, level: 1, grade: "E", score: 50, title: "隐秘藏品", body: "成功收集所有类型的宝箱", plated: "至少有 5 名干员被刺箱/怪箱击倒", trackers: [
-    { type: "checklist", label: "宝箱收集记录", options: BLACKFLOW_CHESTS, target: 4 },
+  { id: 35, level: 1, grade: "E", score: 50, title: "隐秘藏品", body: "成功收集见到的所有宝箱", plated: "收集见到的所有宝箱，同时至少有 5 名干员被刺箱/怪箱击倒", trackers: [
+    { type: "failure", label: "宝箱是否全部收集" },
     /* 完成看宝箱、镀层看击倒数：drivePlate 让这条计数只参与镀层判定 */
     { type: "counter", label: "击倒干员计数", unit: "名", target: 5, min: 0, drivePlate: true }
   ] },

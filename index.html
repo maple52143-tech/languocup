@@ -2099,6 +2099,80 @@ button { font: inherit; }
 .total-score-top::after{content:"";position:absolute;left:50%;bottom:18%;width:34px;height:1px;background:#29b8aa;box-shadow:0 0 14px rgba(41,184,170,.42);transform:translateX(-50%)}
 .total-score-top__label{color:rgba(230,234,229,.76)}
 .total-score-top__value{color:#29b8aa;font-weight:500;text-shadow:0 0 30px rgba(41,184,170,.34)}
+
+/* ============================================================
+   重抽栏
+   ============================================================ */
+.redraw-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.redraw-btn {
+  padding: 8px 18px;
+  border: 1px solid rgba(114,217,206,.4);
+  color: #bcd4cb;
+  background: rgba(23,54,48,.6);
+  font-size: 12px;
+  letter-spacing: .14em;
+  cursor: pointer;
+  transition: .2s;
+}
+.redraw-btn:hover {
+  border-color: #d8c58c;
+  color: #fff1c9;
+}
+.redraw-btn.active {
+  border-color: #ffd87a;
+  color: #fff1c9;
+  box-shadow: inset 0 2px rgba(255,216,122,.5);
+}
+.redraw-btn--exec {
+  border-color: rgba(232,205,151,.7);
+  color: #ffe5a4;
+}
+.redraw-btn--exec:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+.redraw-btn--cancel {
+  border-color: rgba(217,82,64,.5);
+  color: #ffb8aa;
+}
+.redraw-hint {
+  color: #82928a;
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+
+/* 重抽模式下的格子交互 */
+body.redraw-mode .cell {
+  cursor: crosshair;
+}
+body.redraw-mode .cell:hover {
+  border-color: rgba(255,216,122,.8);
+  box-shadow: 0 0 16px rgba(255,216,122,.4);
+}
+.cell.redraw-marked {
+  border-color: #ffd87a !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,216,122,.6),
+    0 0 20px rgba(255,216,122,.5) !important;
+  animation: redrawPulse 1.4s ease-in-out infinite alternate;
+}
+@keyframes redrawPulse {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.15); }
+}
+@media (max-width: 700px) {
+  .redraw-bar { margin-top: 8px; gap: 6px; }
+  .redraw-btn { padding: 6px 12px; font-size: 11px; }
+  .redraw-hint { font-size: 10px; }
+}
+
 @media(max-width:700px){
 .settlement-card{min-height:0;padding:22px 16px 20px 58px}.settlement-card::before{left:5px;font-size:48px}
 .settlement-card .recruit-inputs{grid-template-columns:1fr}.settlement-card .score-field{min-height:72px;padding:12px 14px 10px}
@@ -2229,6 +2303,13 @@ button { font: inherit; }
         <button id="seedApplyBtn" type="button">读取</button>
       </div>
     </div>
+  </section>
+
+  <section class="redraw-bar" aria-label="词条重抽">
+    <button id="redrawToggleBtn" class="redraw-btn" type="button">重抽模式</button>
+    <button id="redrawExecBtn" class="redraw-btn redraw-btn--exec" type="button" hidden>执行重抽</button>
+    <button id="redrawCancelBtn" class="redraw-btn redraw-btn--cancel" type="button" hidden>取消</button>
+    <span id="redrawHint" class="redraw-hint"></span>
   </section>
 
   <section class="f-tier" aria-labelledby="fTierTitle">
@@ -2447,6 +2528,11 @@ let activeLines = 0;
 let scoreVisible = true;
 /* 当前盘面上的词条（导出时需要用它取回各终端的配置） */
 let currentEntries = [];
+
+/* 重抽功能：默认最多可选 3 个词条；想调大或调小只改这个值 */
+const MAX_REDRAW = 3;
+let redrawMode = false;
+const redrawSet = new Set();
 
 const scoreInputs = ['tempFour', 'tempFive', 'tempSix', 'specialEnemyCount']
   .map(function (id) { return document.getElementById(id); });
@@ -2787,7 +2873,10 @@ document.addEventListener('pointerdown', function (event) {
   }
 });
 document.addEventListener('keydown', function (event) {
-  if (event.key === 'Escape') closeTrackerPanel();
+  if (event.key === 'Escape') {
+    closeTrackerPanel();
+    if (redrawMode) exitRedrawMode();
+  }
 });
 window.addEventListener('resize', closeTrackerPanel);
 
@@ -2978,117 +3067,118 @@ function updatePlateBadge(cell) {
   badge.textContent = cell.classList.contains('plate-active') ? '已镀层' : '可镀层';
 }
 
+function buildCell(entry, index) {
+  const cell = document.createElement('button');
+  cell.type = 'button';
+  const trackers = entry.trackers || [];
+  cell.className = 'cell enter'
+    + (entry.body ? '' : ' no-body')
+    + (entry.plated ? ' has-plate' : '')
+    + (trackers.length ? ' has-tracker' : '');
+  cell.setAttribute('aria-pressed', 'false');
+  cell.setAttribute('aria-label',
+    entry.title
+    + (entry.body ? '：' + entry.body : '')
+    + (entry.plated ? '｜镀层：' + entry.plated : '')
+    + (trackers.length ? '｜右键打开' + trackers.map(function (t) { return t.label; }).join('、') : ''));
+  cell.dataset.index = String(index + 1).padStart(2, '0');
+  cell.dataset.level = String(entry.level || 1);
+  cell.dataset.entryId = String(entry.id !== undefined ? entry.id : -1);
+  cell.style.setProperty('--col', index % 5);
+  cell.style.setProperty('--row', Math.floor(index / 5));
+  cell.style.animationDelay = (index * 20) + 'ms';
+
+  const mark = document.createElement('i');
+  mark.className = 'cell-mark';
+
+  const front = document.createElement('span');
+  front.className = 'cell-face cell-front';
+  front.innerHTML = '<span class="cell-text"></span>';
+  front.firstChild.textContent = entry.title;
+
+  const back = document.createElement('span');
+  back.className = 'cell-face cell-back';
+  back.innerHTML = '<span class="cell-text"></span>';
+  back.firstChild.textContent = entry.body;
+
+  cell.append(mark, front, back);
+
+  // 层级数字
+  const levelTag = document.createElement('span');
+  levelTag.className = 'cell-level';
+  levelTag.textContent = String(entry.level || 1);
+  cell.appendChild(levelTag);
+
+  // 记录终端
+  if (trackers.length) {
+    const badgeBox = document.createElement('span');
+    badgeBox.className = 'cell-tracker-badges';
+    trackers.forEach(function (config, trackerIndex) {
+      const trackerBadge = document.createElement('span');
+      trackerBadge.className = 'cell-tracker-badge';
+      trackerBadge.dataset.trackerIndex = String(trackerIndex);
+      badgeBox.appendChild(trackerBadge);
+    });
+    cell.appendChild(badgeBox);
+    cell.dataset.trackerType = trackers.map(function (t) { return t.type; }).join(',');
+    trackers.forEach(function (config, trackerIndex) {
+      paintTrackerBadge(cell, trackerIndex, readEntryTrackerState(entry, trackerIndex), config);
+    });
+    cell.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      openTrackerPanel(cell, entry, event);
+    });
+    cell.addEventListener('keydown', function (event) {
+      if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+        event.preventDefault();
+        openTrackerPanel(cell, entry, event);
+      }
+    });
+    applyTrackerCompletion(cell, entry);
+  }
+
+  // 镀层
+  if (entry.plated) {
+    const plate = document.createElement('span');
+    plate.className = 'cell-plate';
+    plate.innerHTML = '<span class="cell-text"></span>';
+    plate.firstChild.textContent = entry.plated;
+    cell.appendChild(plate);
+
+    const badge = document.createElement('span');
+    badge.className = 'cell-plate-badge';
+    badge.textContent = '可镀层';
+    cell.appendChild(badge);
+
+    cell.addEventListener('wheel', function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      cell.classList.toggle('plate-active');
+      updatePlateBadge(cell);
+      if (cell.classList.contains('selected')) updateScore();
+      playSound('paper', .05);
+      scheduleSave();
+    }, { passive: false });
+  }
+
+  cell.addEventListener('click', function (ev) { handleCellClick(cell, ev); });
+  cell.addEventListener('animationend', function (ev) {
+    if (ev.animationName === 'cellIn') {
+      cell.classList.remove('enter');
+      cell.style.animationDelay = '';
+    }
+  });
+
+  return cell;
+}
+
 function renderBoard(entries) {
   currentEntries = entries.slice();
   const frag = document.createDocumentFragment();
-
   entries.forEach(function (entry, index) {
-    const cell = document.createElement('button');
-    cell.type = 'button';
-    const trackers = entry.trackers || [];
-    cell.className = 'cell enter'
-      + (entry.body ? '' : ' no-body')
-      + (entry.plated ? ' has-plate' : '')
-      + (trackers.length ? ' has-tracker' : '');
-    cell.setAttribute('aria-pressed', 'false');
-    cell.setAttribute('aria-label',
-      entry.title
-      + (entry.body ? '：' + entry.body : '')
-      + (entry.plated ? '｜镀层：' + entry.plated : '')
-      + (trackers.length ? '｜右键打开' + trackers.map(function (t) { return t.label; }).join('、') : ''));
-    cell.dataset.index = String(index + 1).padStart(2, '0');
-    cell.dataset.level = String(entry.level || 1);
-    cell.dataset.entryId = String(entry.id !== undefined ? entry.id : -1);
-    cell.style.setProperty('--col', index % 5);
-    cell.style.setProperty('--row', Math.floor(index / 5));
-    cell.style.animationDelay = (index * 20) + 'ms';
-
-    const mark = document.createElement('i');
-    mark.className = 'cell-mark';
-
-    const front = document.createElement('span');
-    front.className = 'cell-face cell-front';
-    front.innerHTML = '<span class="cell-text"></span>';
-    front.firstChild.textContent = entry.title;
-
-    const back = document.createElement('span');
-    back.className = 'cell-face cell-back';
-    back.innerHTML = '<span class="cell-text"></span>';
-    back.firstChild.textContent = entry.body;
-
-    cell.append(mark, front, back);
-
-    // 层级数字
-    const levelTag = document.createElement('span');
-    levelTag.className = 'cell-level';
-    levelTag.textContent = String(entry.level || 1);
-    cell.appendChild(levelTag);
-
-    // 记录终端（一个词条可以有多个，徽标自上而下排开）
-    if (trackers.length) {
-      const badgeBox = document.createElement('span');
-      badgeBox.className = 'cell-tracker-badges';
-      trackers.forEach(function (config, trackerIndex) {
-        const trackerBadge = document.createElement('span');
-        trackerBadge.className = 'cell-tracker-badge';
-        trackerBadge.dataset.trackerIndex = String(trackerIndex);
-        badgeBox.appendChild(trackerBadge);
-      });
-      cell.appendChild(badgeBox);
-      cell.dataset.trackerType = trackers.map(function (t) { return t.type; }).join(',');
-      trackers.forEach(function (config, trackerIndex) {
-        paintTrackerBadge(cell, trackerIndex, readEntryTrackerState(entry, trackerIndex), config);
-      });
-      cell.addEventListener('contextmenu', function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        openTrackerPanel(cell, entry, event);
-      });
-      cell.addEventListener('keydown', function (event) {
-        if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
-          event.preventDefault();
-          openTrackerPanel(cell, entry, event);
-        }
-      });
-      applyTrackerCompletion(cell, entry);
-    }
-
-    // 镀层
-    if (entry.plated) {
-      const plate = document.createElement('span');
-      plate.className = 'cell-plate';
-      plate.innerHTML = '<span class="cell-text"></span>';
-      plate.firstChild.textContent = entry.plated;
-      cell.appendChild(plate);
-
-      const badge = document.createElement('span');
-      badge.className = 'cell-plate-badge';
-      badge.textContent = '可镀层';
-      cell.appendChild(badge);
-
-      // 滚轮切换镀层内容 / 原本内容
-      cell.addEventListener('wheel', function (ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        cell.classList.toggle('plate-active');
-        updatePlateBadge(cell);
-        if (cell.classList.contains('selected')) updateScore();
-        playSound('paper', .05);
-        scheduleSave();
-      }, { passive: false });
-    }
-
-    cell.addEventListener('click', function (ev) { handleCellClick(cell, ev); });
-    cell.addEventListener('animationend', function (ev) {
-      if (ev.animationName === 'cellIn') {
-        cell.classList.remove('enter');
-        cell.style.animationDelay = '';
-      }
-    });
-
-    frag.appendChild(cell);
+    frag.appendChild(buildCell(entry, index));
   });
-
   boardEl.replaceChildren(frag);
 }
 
@@ -3112,7 +3202,165 @@ function setCellSelected(cell, selected) {
   scheduleSave();
 }
 
+/* ============================================================
+   重抽功能
+   ------------------------------------------------------------
+   规则：
+     - 最多选 MAX_REDRAW 个格子（默认 3）
+     - 每个被选中的格子按等级独立重抽
+     - 新词条必须和表格中其他所有格子都不同，且不能等于该格的原词条
+     - 被换下的词条回到随机池，可供后续其他被选中的格子抽到
+   ============================================================ */
+function updateRedrawUI() {
+  const toggleBtn = document.getElementById('redrawToggleBtn');
+  if (!toggleBtn) return;
+  const execBtn = document.getElementById('redrawExecBtn');
+  const cancelBtn = document.getElementById('redrawCancelBtn');
+  const hint = document.getElementById('redrawHint');
+
+  if (redrawMode) {
+    toggleBtn.classList.add('active');
+    toggleBtn.textContent = '重抽模式：开';
+    execBtn.hidden = false;
+    cancelBtn.hidden = false;
+    execBtn.textContent = '执行重抽 (' + redrawSet.size + '/' + MAX_REDRAW + ')';
+    execBtn.disabled = redrawSet.size === 0;
+    hint.textContent = redrawSet.size === 0
+      ? '点击格子选择要重抽的词条（最多 ' + MAX_REDRAW + ' 个）'
+      : '已选择 ' + redrawSet.size + ' / ' + MAX_REDRAW;
+  } else {
+    toggleBtn.classList.remove('active');
+    toggleBtn.textContent = '重抽模式';
+    execBtn.hidden = true;
+    cancelBtn.hidden = true;
+    hint.textContent = '';
+  }
+}
+
+function enterRedrawMode() {
+  redrawMode = true;
+  document.body.classList.add('redraw-mode');
+  updateRedrawUI();
+}
+
+function exitRedrawMode() {
+  redrawMode = false;
+  document.body.classList.remove('redraw-mode');
+  redrawSet.forEach(function (cell) {
+    cell.classList.remove('redraw-marked');
+  });
+  redrawSet.clear();
+  updateRedrawUI();
+}
+
+function toggleRedrawMark(cell) {
+  if (redrawSet.has(cell)) {
+    cell.classList.remove('redraw-marked');
+    redrawSet.delete(cell);
+  } else {
+    if (redrawSet.size >= MAX_REDRAW) {
+      playSound('glitch', .05);
+      return;
+    }
+    cell.classList.add('redraw-marked');
+    redrawSet.add(cell);
+  }
+  updateRedrawUI();
+  playSound('click', .05);
+}
+
+function executeRedraw() {
+  if (redrawSet.size === 0) return;
+
+  const cells = [...boardEl.children];
+  const indices = cells
+    .map(function (c, i) { return redrawSet.has(c) ? i : -1; })
+    .filter(function (i) { return i >= 0; });
+
+  if (!indices.length) return;
+
+  /* 复制一份当前所有格子的 id 和 level；currentIds 会边重抽边更新，
+     这样后续格子就能自动排除掉前面格子刚抽到的新词条。 */
+  const currentIds = cells.map(function (c) { return Number(c.dataset.entryId); });
+  const currentLevels = cells.map(function (c) { return Number(c.dataset.level) || 1; });
+
+  /* 每级的全部候选词条 */
+  const poolsByLevel = {};
+  BINGO_DATA.forEach(function (x) {
+    if (!x || typeof x.title !== 'string' || !x.title.trim()) return;
+    const lv = Math.min(5, Math.max(1, Number(x.level) || 1));
+    if (!poolsByLevel[lv]) poolsByLevel[lv] = [];
+    poolsByLevel[lv].push(x);
+  });
+
+  let successCount = 0;
+
+  for (const idx of indices) {
+    const level = currentLevels[idx];
+    const pool = poolsByLevel[level] || [];
+    if (!pool.length) continue;
+
+    /* 排除表格中所有格子当前使用的 id（此时 currentIds[idx] 还是旧 id，
+       所以该格的原词条也天然被排除掉了）。 */
+    const usedIds = new Set(currentIds);
+    const candidates = pool.filter(function (x) {
+      return !usedIds.has(Number(x.id));
+    });
+
+    if (!candidates.length) {
+      console.warn('[重抽] 第 ' + (idx + 1) + ' 格：该等级已无可用的不同词条');
+      continue;
+    }
+
+    const picked = candidates[Math.floor(Math.random() * candidates.length)];
+    const newEntry = {
+      id: picked.id,
+      title: picked.title.trim(),
+      body: (picked.body || '').trim(),
+      plated: (picked.plated || '').trim(),
+      trackers: normalizeTrackers(picked),
+      level: Number(picked.level) || level
+    };
+
+    /* 先更新 currentIds，后面格子重抽时就会排除掉这个新 id */
+    currentIds[idx] = Number(picked.id);
+    currentEntries[idx] = newEntry;
+
+    const oldCell = cells[idx];
+    const newCell = buildCell(newEntry, idx);
+    newCell.classList.remove('enter');
+    oldCell.replaceWith(newCell);
+    cells[idx] = newCell;
+
+    successCount++;
+  }
+
+  if (successCount > 0) {
+    playSound('modal', .08);
+    exitRedrawMode();
+    updateSelectedCount();
+    checkBingo();
+    updateScore();
+    scheduleSave();
+
+    document.getElementById('detailMeta').textContent = 'REDRAW / 重抽完成';
+    document.getElementById('detailTitle').textContent = '重抽了 ' + successCount + ' 个词条';
+    document.getElementById('detailBody').textContent =
+      '重抽后的词条与表格内其他词条均不相同，被换下的词条已放回随机池。';
+    document.getElementById('detailPlate').style.display = 'none';
+  } else {
+    alert('重抽失败：没有可用的同等级词条');
+  }
+}
+
 function handleCellClick(cell, ev) {
+  /* 重抽模式：点击即为标记 / 取消标记，其它行为全部让位 */
+  if (redrawMode) {
+    spawnRipple(cell, ev);
+    toggleRedrawMark(cell);
+    return;
+  }
+
   if (cell.classList.contains('tracker-failed')) {
     playSound('glitch', .055);
     spawnRipple(cell, ev);
@@ -3503,6 +3751,7 @@ function drawFromSeed(seed) {
   const entries = pickEntriesFromSeed(seed);
   if (!entries) return false;
 
+  exitRedrawMode();
   closeTrackerPanel();
   trackerSession.clear();
 
@@ -3528,6 +3777,7 @@ function drawFromSeed(seed) {
    抽取
    ============================================================ */
 function draw() {
+  exitRedrawMode();
   closeTrackerPanel();
   trackerSession.clear();
 
@@ -3625,6 +3875,7 @@ function importBoard(file) {
   const reader = new FileReader();
   reader.onload = function (event) {
     try {
+      exitRedrawMode();
       const raw = JSON.parse(event.target.result);
       const source = Array.isArray(raw) ? raw : (raw && raw.cells);
       if (!Array.isArray(source) || !source.length) throw new Error('文件中没有找到词条数据');
@@ -3983,6 +4234,14 @@ scoreInputs.concat(settlementInputs).forEach(function (input) {
 setupScoreSteppers();
 
 renderFTier();
+
+/* 重抽栏按钮绑定 */
+document.getElementById('redrawToggleBtn').addEventListener('click', function () {
+  if (redrawMode) exitRedrawMode();
+  else enterRedrawMode();
+});
+document.getElementById('redrawCancelBtn').addEventListener('click', exitRedrawMode);
+document.getElementById('redrawExecBtn').addEventListener('click', executeRedraw);
 
 /* ============================================================
    种子读取框绑定
